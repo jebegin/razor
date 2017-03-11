@@ -1,0 +1,36 @@
+# Vagrantfile
+# See https://github.com/yogendra/docker-vmware
+#vagrant up docker-host
+#vagrant up jenkins --provider docker
+#https://<docker-host-ip>:8080
+
+Vagrant.configure(2) do |config|
+    config.vm.define "jenkins" do |b|
+        b.vm.hostname = "jenkins"
+        b.vm.provider "docker" do |d|
+            d.image = "jenkins"
+            d.vagrant_vagrantfile = __FILE__
+            d.vagrant_machine = "docker-host"
+            d.name = "jenkins"
+            d.ports = ['8080:8080', '50000:50000']
+            d.remains_running = true
+            d.volumes = ["/data/jenkins:/var/jenkins_home"]
+#            jenkins_java_opts = "-Dhudson.model.DirectoryBrowserSupport.CSP=\"sandbox allow-scripts; default-src 'none'; img-src 'self' data: ; style-src 'self' 'unsafe-inline' data: ; script-src 'self' 'unsafe-inline' 'unsafe-eval' ;\""
+#            d.env = {"JAVA_OPTS": jenkins_java_opts}
+        end
+    end
+
+    config.vm.define "docker-host", auto_start: false do |dockerHost|
+        dockerHost.vm.hostname = "docker-host"
+        dockerHost.vm.box = "yogendra/docker-vmware"
+        dockerHost.vm.synced_folder "/usr/local/bin/data", "/data"
+        dockerHost.vm.network :forwarded_port, guest: 8080, host: 8080
+        dockerHost.vm.network :forwarded_port, guest: 50000, host: 50000
+#         dockerHost.vm.provider "vmware_workstation" do |v|
+        dockerHost.vm.provider "vmware_fusion" do |v|
+            v.linked_clone = true
+            v.vmx["memsize"] = "2048"
+            v.vmx["numvcpus"] = "1"
+        end
+    end
+end

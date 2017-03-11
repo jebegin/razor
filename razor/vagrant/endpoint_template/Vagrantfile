@@ -1,0 +1,52 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require './config'
+
+# This setup should be switched to a mainstream provisioner to be able to
+# support differnet types and versions of linux
+# setup will: Install git, install python3, setup virtualenv, install razor, run
+# rpyc_classic service.  This essentially preps the endpoint for basic testing.
+$setup = <<SCRIPT
+    echo Simple provisioning:
+    sudo apt-get -y update
+    sudo apt-get -y install git
+    sudo apt-get -y install python3
+    sudo apt-get -y install python-virtualenv
+    virtualenv -p /usr/bin/python3 vrazor
+    source /home/vagrant/vrazor/bin/activate
+    pip install git+git://github.com/jebegin/razor.git
+    rpyc_classic.py &
+SCRIPT
+
+Vagrant.configure(2) do |config|
+    config.vm.box = $box
+    # this changes the hostname with virtualbox
+    config.vm.hostname = $hostname
+    # this changes the hostname with vmware
+    config.vm.define $hostname do |my_vm|
+    end
+
+    config.vm.provider "virtualbox" do |v|
+        v.linked_clone = true
+        v.memory = 2048
+        v.cpus = 1
+        v.name = $hostname
+    end
+
+    config.vm.provider "vmware_workstation" do |v|
+        v.linked_clone = true
+        v.vmx["memsize"] = "2048"
+        v.vmx["numvcpus"] = "1"
+        v.vmx['displayname'] = $hostname
+    end
+
+    config.vm.provider "vmware_fusion" do |v|
+        v.linked_clone = true
+        v.vmx["memsize"] = "2048"
+        v.vmx["numvcpus"] = "1"
+        v.vmx['displayname'] = $hostname
+    end
+
+    config.vm.provision "shell", inline: $setup
+end

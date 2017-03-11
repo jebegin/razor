@@ -13,6 +13,7 @@ setup(
     # scripts=[os.path.join(here, "razor/foo.py")],
     install_requires=[
         'python-vagrant>=0.5.14',
-        'rpyc>=3.3.0'
+        'rpyc>=3.3.0',
+        'pytest>=3.0.6'
     ],
     include_package_data=True)
