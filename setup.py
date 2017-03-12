@@ -12,7 +12,6 @@ setup(
     packages=find_packages(),
     # scripts=[os.path.join(here, "razor/foo.py")],
     install_requires=[
-        'rpyc>=3.3.0',
-        'distro>=1.0.2'
+        'rpyc>=3.3.0'
     ],
     include_package_data=True)

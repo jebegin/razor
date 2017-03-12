@@ -1,6 +1,5 @@
 import logging
 import platform
-import distro
 
 log = logging.getLogger(__name__)
 
@@ -10,7 +9,9 @@ class Sensor(object):
         self.system, self.node, self.release, self.version, self.machine, \
             self.processor = platform.uname()
         if 'linux' in self.system.lower():
-            self.my_distro = distro.linux_distribution()
+            # dist() is deprecated in python 3.7, will have to add logic to
+            # to verify remote python version and use platform or distro
+            self.dist_name, self.dist_version, self.dist_id = platform.dist()
         else:
             self.my_distro = None
 
@@ -32,5 +33,11 @@ class Sensor(object):
     def get_processor(self):
         return self.processor
 
-    def get_distribution(self):
-        return self.my_distro
+    def get_distribution_name(self):
+        return self.dist_name
+
+    def get_distribution_version(self):
+        return self.dist_version
+
+    def get_distribution_id(self):
+        return self.dist_id
