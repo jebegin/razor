@@ -22,7 +22,7 @@ def configure_logging(location=None, rpyc=False):
     log_file = os.path.join(path, filename)
 
     console_handler = logging.StreamHandler()
-    console_handler.flush()
+    # console_handler.flush()
     file_handler = logging.FileHandler(log_file, mode='w')
 
     console_handler.setFormatter(console_formatter)
