@@ -37,8 +37,15 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def logger(request):
+def logger(request, rpyc_conn):
     configure_logging(request.config.option.log_location)
+    rlogger = rpyc_conn.modules['razor.common.logger']
+    rlogger.configure_logging(rpyc=True)
+
+
+@pytest.fixture(name='rpyc_conn', scope='session')
+def rpyc_connection(endpoint):
+    return rpyc.classic.connect(endpoint.hostname())
 
 
 @pytest.fixture(name='endpoint', scope='session')
@@ -72,6 +79,7 @@ def setup_endpoint(request):
     log.info('Issue vagrant up')
     v = vagrant.Vagrant(root=vagrant_root, quiet_stdout=True)
     v.up(provider='vmware_fusion', provision_with=['shell'])
+    log.info('Hostname: {}'.format(v.hostname()))
 
     yield v
 
@@ -82,8 +90,3 @@ def setup_endpoint(request):
         v.destroy()
         log.info('Removing vagrant root: {}'.format(vagrant_root))
         shutil.rmtree(vagrant_root)
-
-
-@pytest.fixture(name='rpyc_conn', scope='session')
-def rpyc_connection(endpoint):
-    return rpyc.classic.connect(endpoint.hostname())
