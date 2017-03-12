@@ -19,18 +19,21 @@ def pytest_addoption(parser):
                      action="store",
                      required=True,
                      help="Hostname of the endpoint.")
-    parser.addoption("--vagrantfile",
+    parser.addoption("--vagrant_template",
                      action="store",
                      required=True,
-                     help="Full path location of Vagrantfile.",
-                     default="/Users/jacob.begin/ws/razor/vagrant/"
-                             "endpoint_template/Vagrantfile")
+                     help="Name of the Vagrantfile template.",
+                     default='endpoint_template')
     parser.addoption("--log_location",
                      action="store",
                      required=False,
                      help="Location for the log file, defaults to home "
                           "directory",
                      default=None)
+    parser.addoption("--skip_destroy",
+                     action="store_true",
+                     required=False,
+                     help="Do not destroy and clean up the VM")
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -57,17 +60,30 @@ def setup_endpoint(request):
             request.config.option.box, hostname))
 
     # copy over Vagrantfile template for linux
-    log.info('file path: {}'.format(os.path.dirname(__file__)))
-    shutil.copy(request.config.option.vagrantfile, vagrant_root)
+    vagrant_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                               '..',
+                                               'vagrant'))
+    vagrant_file = os.path.join(vagrant_dir,
+                                request.config.option.vagrant_template,
+                                'Vagrantfile')
+    log.info('Vagrantfile template: {}'.format(vagrant_file))
+    shutil.copy(vagrant_file, vagrant_root)
 
     log.info('Issue vagrant up')
-    v = vagrant.Vagrant(root=vagrant_root)
+    v = vagrant.Vagrant(root=vagrant_root, quiet_stdout=True)
     v.up(provider='vmware_fusion', provision_with=['shell'])
 
     yield v
 
-    log.info('Issue vagrant destroy')
-    v.destroy()
-    log.info('Removing vagrant root: {}'.format(vagrant_root))
-    shutil.rmtree(vagrant_root)
+    if request.config.option.skip_destroy:
+        log.info('Vagrant VM will not be destroyed and cleaned up.')
+    else:
+        log.info('Issue vagrant destroy')
+        v.destroy()
+        log.info('Removing vagrant root: {}'.format(vagrant_root))
+        shutil.rmtree(vagrant_root)
 
+
+@pytest.fixture(name='rpyc_conn', scope='session')
+def rpyc_connection(endpoint):
+    return rpyc.classic.connect(endpoint.hostname())
