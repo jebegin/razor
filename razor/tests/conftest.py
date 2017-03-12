@@ -37,10 +37,12 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def logger(request, rpyc_conn):
+def logger(request):
     configure_logging(request.config.option.log_location)
-    rlogger = rpyc_conn.modules['razor.common.logger']
-    rlogger.configure_logging(rpyc=True)
+    # Having issues with creating a remote logger when kicking off rpyc_classic
+    # from Vagrantfile, this will need further investigation
+    # rlogger = rpyc_conn.modules['razor.common.logger']
+    # rlogger.configure_logging(rpyc=True)
 
 
 @pytest.fixture(name='rpyc_conn', scope='session')
@@ -90,3 +92,9 @@ def setup_endpoint(request):
         v.destroy()
         log.info('Removing vagrant root: {}'.format(vagrant_root))
         shutil.rmtree(vagrant_root)
+
+
+@pytest.fixture(name='sensor', scope='session')
+def sensor_of_endpoint(rpyc_conn):
+    rsensor = rpyc_conn.modules['razor.sensor.sensor']
+    return rsensor.Sensor()

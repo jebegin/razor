@@ -4,8 +4,9 @@ import logging
 log = logging.getLogger(__name__)
 
 
-@pytest.mark.usefixtures('endpoint')
+@pytest.mark.usefixtures('sensor')
 class TestEndpoint:
-    def test_endpoint(self, endpoint):
-        log.info('Endpoint IP address is: {}'.format(endpoint.hostname()))
-        assert 1
+    def test_endpoint(self, sensor):
+        log.info('Verify sensor is install on Linux 12.04 LTS')
+        assert 'linux' in sensor.get_system().lower()
+        log.info('distro: {}'.format(sensor.get_distribution()))

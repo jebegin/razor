@@ -16,7 +16,7 @@ $setup = <<SCRIPT
     virtualenv -p /usr/bin/python3 vrazor
     source /home/vagrant/vrazor/bin/activate
     pip install git+git://github.com/jebegin/razor.git
-    nohup rpyc_classic.py &
+    rpyc_classic.py &
 SCRIPT
 
 Vagrant.configure(2) do |config|
