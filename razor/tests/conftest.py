@@ -81,7 +81,7 @@ def setup_endpoint(request):
     log.info('Issue vagrant up')
     v = vagrant.Vagrant(root=vagrant_root, quiet_stdout=True)
     v.up(provider='vmware_fusion', provision_with=['shell'])
-    log.info('Hostname: {}'.format(v.hostname()))
+    log.info('Host IP or Name: {}'.format(v.hostname()))
 
     yield v
 

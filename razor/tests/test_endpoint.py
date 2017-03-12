@@ -13,5 +13,5 @@ class TestEndpoint:
         assert '12.04' in sensor.get_distribution_version()
         log.info('The endpoints distribution is: {} {} {}'.format(
             sensor.get_system(),
-            sensor.get_distribution_name,
+            sensor.get_distribution_name(),
             sensor.get_distribution_version()))
