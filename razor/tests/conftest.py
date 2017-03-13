@@ -45,6 +45,7 @@ def logger(request):
     # rlogger.configure_logging(rpyc=True)
 
 
+# create a rpyc connection to VM under test
 @pytest.fixture(name='rpyc_conn', scope='session')
 def rpyc_connection(endpoint):
     return rpyc.classic.connect(endpoint.hostname())
@@ -68,7 +69,7 @@ def setup_endpoint(request):
         f.write("$box = '{}'\n$hostname = '{}'".format(
             request.config.option.box, hostname))
 
-    # copy over Vagrantfile template for linux
+    # copy over Vagrantfile template to vagrant root directory
     vagrant_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                '..',
                                                'vagrant'))
@@ -78,6 +79,7 @@ def setup_endpoint(request):
     log.info('Vagrantfile template: {}'.format(vagrant_file))
     shutil.copy(vagrant_file, vagrant_root)
 
+    # bring vagrant box up
     log.info('Issue vagrant up')
     v = vagrant.Vagrant(root=vagrant_root, quiet_stdout=True)
     v.up(provider='vmware_fusion', provision_with=['shell'])
@@ -85,6 +87,7 @@ def setup_endpoint(request):
 
     yield v
 
+    # destroy the vagrant box and delete the vagrant root directory
     if request.config.option.skip_destroy:
         log.info('Vagrant VM will not be destroyed and cleaned up.')
     else:
@@ -94,6 +97,7 @@ def setup_endpoint(request):
         shutil.rmtree(vagrant_root)
 
 
+# create a sensor object on the VM under test
 @pytest.fixture(name='sensor', scope='session')
 def sensor_of_endpoint(rpyc_conn):
     rsensor = rpyc_conn.modules['razor.sensor.sensor']
