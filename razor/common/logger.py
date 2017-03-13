@@ -2,7 +2,8 @@ import logging
 import os
 import time
 
-
+# Need to try only logging to a file and not the console when cconfiguring
+# logging on the rpyc server (ie the VM)
 def configure_logging(location=None, rpyc=False):
     console_formatter = logging.Formatter(
         '[%(asctime)s ' + '%(levelname)s:%(lineno)d] %(message)s',
